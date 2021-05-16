@@ -63,10 +63,10 @@ const getCurrentUser = (req, res, next) => {
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        throw new BadRequestError(INCORRECT_DATA);
+      if (err.code === 11000) {
+        throw new ConflictError(DUPLICATED_EMAIL);
       }
-      return next(new NotFoundError(USER_NOT_FOUND));
+      throw err;
     })
     .catch(next);
 };
@@ -89,10 +89,10 @@ const updateUser = (req, res, next) => {
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
-        throw new BadRequestError(INCORRECT_DATA);
+      if (err.code === 11000) {
+        throw new ConflictError(DUPLICATED_EMAIL);
       }
-      return next(new NotFoundError(USER_NOT_FOUND));
+      throw err;
     })
     .catch(next);
 };

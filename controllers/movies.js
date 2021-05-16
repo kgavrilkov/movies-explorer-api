@@ -38,6 +38,7 @@ const createMovie = (req, res, next) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
         throw new BadRequestError(INCORRECT_DATA);
       }
+      throw err;
     })
     .catch(next);
 };
@@ -53,11 +54,12 @@ const deleteMovie = (req, res, next) => {
   Movie.findById(_id)
     .orFail(new NotFoundError(MOVIE_NOT_FOUND))
     .then((movie) => {
-      if (movie.owner.toString() === req.user._id) {
-        movie.remove();
-        res.status(200).send({ message: MOVIE_DELETED });
+      if (movie.owner.toString() !== req.user._id) {
+        throw new BadRequestError(FORBIDDEN_DELETE_MOVIE);
+      } else {
+        return movie.remove()
+          .then(() => res.status(200).send({ message: MOVIE_DELETED }));
       }
-      throw new BadRequestError(FORBIDDEN_DELETE_MOVIE);
     })
     .catch(next);
 };
